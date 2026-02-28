@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/authContext';
 import { FiMail, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 

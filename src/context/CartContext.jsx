@@ -14,7 +14,7 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const { isAuthenticated } = useAuth();
@@ -23,7 +23,7 @@ export const CartProvider = ({ children }) => {
     if (isAuthenticated) {
       fetchCart();
     } else {
-      setCart([]);
+      setCartItems([]);
       setTotal(0);
     }
   }, [isAuthenticated]);
@@ -32,8 +32,12 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get('/api/cart');
-      setCart(response.data.cart);
-      setTotal(response.data.total);
+      setCartItems(response.data.items || []);
+      
+      const cartTotal = response.data.items.reduce((sum, item) => {
+        return sum + (item.product?.price || 0) * item.quantity;
+      }, 0);
+      setTotal(cartTotal);
     } catch (error) {
       console.error('Fetch cart error:', error);
       toast.error('Failed to load cart');
@@ -50,7 +54,7 @@ export const CartProvider = ({ children }) => {
 
     try {
       const response = await axios.post('/api/cart', { product_id: productId, quantity });
-      setCart(response.data.cart);
+      setCartItems(response.data.items || []);
       toast.success('Item added to cart');
       return true;
     } catch (error) {
@@ -67,7 +71,12 @@ export const CartProvider = ({ children }) => {
       }
 
       const response = await axios.put(`/api/cart/${cartItemId}`, { quantity });
-      setCart(response.data.cart);
+      setCartItems(response.data.items || []);
+      
+      const cartTotal = response.data.items.reduce((sum, item) => {
+        return sum + (item.product?.price || 0) * item.quantity;
+      }, 0);
+      setTotal(cartTotal);
     } catch (error) {
       toast.error('Failed to update quantity');
     }
@@ -75,8 +84,13 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (cartItemId) => {
     try {
-      await axios.delete(`/api/cart/${cartItemId}`);
-      setCart(prev => prev.filter(item => item.id !== cartItemId));
+      const response = await axios.delete(`/api/cart/${cartItemId}`);
+      setCartItems(response.data.items || []);
+      
+      const cartTotal = (response.data.items || []).reduce((sum, item) => {
+        return sum + (item.product?.price || 0) * item.quantity;
+      }, 0);
+      setTotal(cartTotal);
       toast.success('Item removed from cart');
     } catch (error) {
       toast.error('Failed to remove item');
@@ -86,7 +100,7 @@ export const CartProvider = ({ children }) => {
   const clearCart = async () => {
     try {
       await axios.delete('/api/cart');
-      setCart([]);
+      setCartItems([]);
       setTotal(0);
       toast.success('Cart cleared');
     } catch (error) {
@@ -94,10 +108,10 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const value = {
-    cart,
+    cartItems,
     loading,
     total,
     cartCount,

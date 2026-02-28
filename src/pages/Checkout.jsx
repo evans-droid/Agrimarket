@@ -1,324 +1,291 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 import axios from 'axios';
-import { FiCreditCard, FiSmartphone, FiTruck } from 'react-icons/fi';
+import { FiShoppingCart, FiCreditCard, FiMapPin, FiTruck, FiCheckCircle } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
-  const navigate = useNavigate();
-  const { cart, total, clearCart } = useCart();
   const { user } = useAuth();
-  
-  const [step, setStep] = useState(1);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [orderTotal, setOrderTotal] = useState(0);
+  
   const [formData, setFormData] = useState({
+    payment_method: 'cash_on_delivery',
     delivery_address: user?.delivery_address || '',
-    phone_number: user?.phone || '',
-    payment_method: 'mobile_money',
-    mobile_money_provider: 'mtn',
-    mobile_money_number: '',
+    delivery_phone: user?.phone || '',
     notes: ''
   });
 
-  const handleInputChange = (e) => {
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const fetchCart = async () => {
+    try {
+      const response = await axios.get('/api/cart');
+      setCartItems(response.data.items || []);
+      
+      const total = response.data.items.reduce((sum, item) => {
+        return sum + (item.product?.price || 0) * item.quantity;
+      }, 0);
+      setOrderTotal(total);
+    } catch (error) {
+      console.error('Fetch cart error:', error);
+      toast.error('Failed to load cart');
+    }
+  };
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePlaceOrder = async () => {
-    if (!formData.delivery_address || !formData.phone_number) {
-      toast.error('Please fill in all required fields');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.delivery_address) {
+      toast.error('Please provide a delivery address');
       return;
     }
 
+    if (!formData.delivery_phone) {
+      toast.error('Please provide a contact phone number');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      toast.error('Your cart is empty');
+      return;
+    }
+
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      const response = await axios.post('/api/orders', formData);
+      const orderData = {
+        items: cartItems.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.product?.price
+        })),
+        total_amount: orderTotal,
+        delivery_address: formData.delivery_address,
+        delivery_phone: formData.delivery_phone,
+        payment_method: formData.payment_method,
+        notes: formData.notes
+      };
+
+      const response = await axios.post('/api/orders', orderData);
       
       if (response.data.success) {
-        clearCart();
         toast.success('Order placed successfully!');
-        navigate(`/orders/${response.data.order.id}`);
+        navigate('/order-history');
       }
     } catch (error) {
+      console.error('Order error:', error);
       toast.error(error.response?.data?.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
   };
 
-  if (cart.length === 0) {
-    navigate('/cart');
-    return null;
-  }
+  const deliveryFee = orderTotal >= 100 ? 0 : 15;
+  const finalTotal = orderTotal + deliveryFee;
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
         Checkout
       </h1>
 
-      {/* Progress Steps */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {[1, 2, 3].map((num) => (
-            <div key={num} className="flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                step >= num 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
-              }`}>
-                {num}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Order Form */}
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+              <FiMapPin className="mr-2" />
+              Delivery Information
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Delivery Address
+                </label>
+                <textarea
+                  name="delivery_address"
+                  value={formData.delivery_address}
+                  onChange={handleChange}
+                  rows="3"
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder="Enter your full delivery address"
+                />
               </div>
-              {num < 3 && (
-                <div className={`w-24 h-1 mx-2 ${
-                  step > num 
-                    ? 'bg-green-600' 
-                    : 'bg-gray-200 dark:bg-gray-700'
-                }`} />
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between mt-2 text-sm">
-          <span className="text-gray-600 dark:text-gray-300">Delivery</span>
-          <span className="text-gray-600 dark:text-gray-300">Payment</span>
-          <span className="text-gray-600 dark:text-gray-300">Confirm</span>
-        </div>
-      </div>
 
-      {/* Step 1: Delivery Information */}
-      {step === 1 && (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-        >
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-            <FiTruck className="mr-2" />
-            Delivery Information
-          </h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Delivery Address *
-              </label>
-              <textarea
-                name="delivery_address"
-                value={formData.delivery_address}
-                onChange={handleInputChange}
-                rows="3"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter your full delivery address"
-                required
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Contact Phone
+                </label>
+                <input
+                  type="tel"
+                  name="delivery_phone"
+                  value={formData.delivery_phone}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder="Enter your phone number"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Phone Number *
-              </label>
-              <input
-                type="tel"
-                name="phone_number"
-                value={formData.phone_number}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter your phone number"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Delivery Notes (Optional)
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                rows="2"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Any special instructions for delivery"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Order Notes (Optional)
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows="2"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder="Any special instructions?"
+                />
+              </div>
+            </form>
           </div>
 
-          <button
-            onClick={() => setStep(2)}
-            className="mt-6 w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
-          >
-            Continue to Payment
-          </button>
-        </motion.div>
-      )}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+              <FiCreditCard className="mr-2" />
+              Payment Method
+            </h2>
 
-      {/* Step 2: Payment Method */}
-      {step === 2 && (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-        >
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
-            <FiCreditCard className="mr-2" />
-            Payment Method
-          </h2>
-
-          <div className="space-y-4">
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-              <label className="flex items-center space-x-3">
-                <input
-                  type="radio"
-                  name="payment_method"
-                  value="mobile_money"
-                  checked={formData.payment_method === 'mobile_money'}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 text-green-600"
-                />
-                <div className="flex items-center">
-                  <FiSmartphone className="text-2xl text-gray-600 dark:text-gray-300 mr-2" />
-                  <span className="font-medium text-gray-800 dark:text-white">Mobile Money</span>
-                </div>
-              </label>
-
-              {formData.payment_method === 'mobile_money' && (
-                <div className="mt-4 ml-7 space-y-3">
-                  <select
-                    name="mobile_money_provider"
-                    value={formData.mobile_money_provider}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  >
-                    <option value="mtn">MTN Mobile Money</option>
-                    <option value="vodafone">Vodafone Cash</option>
-                    <option value="airteltigo">AirtelTigo Money</option>
-                  </select>
-                  <input
-                    type="tel"
-                    name="mobile_money_number"
-                    value={formData.mobile_money_number}
-                    onChange={handleInputChange}
-                    placeholder="Mobile Money Number"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-              <label className="flex items-center space-x-3">
+            <div className="space-y-3">
+              <label className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                 <input
                   type="radio"
                   name="payment_method"
                   value="cash_on_delivery"
                   checked={formData.payment_method === 'cash_on_delivery'}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   className="h-4 w-4 text-green-600"
                 />
-                <span className="font-medium text-gray-800 dark:text-white">Cash on Delivery</span>
+                <div className="ml-3">
+                  <span className="block text-sm font-medium text-gray-900 dark:text-white">
+                    Cash on Delivery
+                  </span>
+                  <span className="block text-sm text-gray-500">
+                    Pay when you receive your order
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 opacity-50">
+                <input
+                  type="radio"
+                  name="payment_method"
+                  value="card"
+                  checked={formData.payment_method === 'card'}
+                  onChange={handleChange}
+                  disabled
+                  className="h-4 w-4 text-green-600"
+                />
+                <div className="ml-3">
+                  <span className="block text-sm font-medium text-gray-900 dark:text-white">
+                    Card Payment
+                  </span>
+                  <span className="block text-sm text-gray-500">
+                    Coming soon
+                  </span>
+                </div>
               </label>
             </div>
           </div>
+        </div>
 
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={() => setStep(1)}
-              className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-semibold"
-            >
-              Back
-            </button>
-            <button
-              onClick={() => setStep(3)}
-              className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
-            >
-              Review Order
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Step 3: Order Summary */}
-      {step === 3 && (
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="space-y-6"
-        >
+        {/* Order Summary */}
+        <div className="space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+              <FiShoppingCart className="mr-2" />
               Order Summary
             </h2>
 
-            <div className="space-y-3 mb-4">
-              {cart.map(item => (
-                <div key={item.id} className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <span className="text-gray-600 dark:text-gray-300">
-                      {item.product.name}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      x{item.quantity}
+            <div className="space-y-4 mb-6">
+              {cartItems.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">Your cart is empty</p>
+              ) : (
+                cartItems.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center">
+                      <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden mr-3">
+                        <img 
+                          src={item.product?.image_url || '/api/placeholder/100/100'} 
+                          alt={item.product?.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {item.product?.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Qty: {item.quantity} × GH₵{item.product?.price}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      GH₵{(item.product?.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
-                  <span className="font-semibold text-gray-800 dark:text-white">
-                    GH₵{(item.product.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Subtotal</span>
-                <span className="font-semibold">GH₵{total.toFixed(2)}</span>
+              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                <span>Subtotal</span>
+                <span>GH₵{orderTotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">Delivery Fee</span>
-                <span className="font-semibold text-green-600">Free</span>
+              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                <span className="flex items-center">
+                  <FiTruck className="mr-1" />
+                  Delivery {orderTotal >= 100 && <span className="text-green-600 ml-1">(Free over GH₵100)</span>}
+                </span>
+                <span>{deliveryFee === 0 ? 'Free' : `GH₵${deliveryFee.toFixed(2)}`}</span>
               </div>
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
-                <div className="flex justify-between text-lg font-bold">
-                  <span className="text-gray-800 dark:text-white">Total</span>
-                  <span className="text-green-600">GH₵{total.toFixed(2)}</span>
-                </div>
+              <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700">
+                <span>Total</span>
+                <span>GH₵{finalTotal.toFixed(2)}</span>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-              Delivery Details
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-2">
-              <span className="font-semibold">Address:</span> {formData.delivery_address}
-            </p>
-            <p className="text-gray-600 dark:text-gray-300">
-              <span className="font-semibold">Phone:</span> {formData.phone_number}
-            </p>
-          </div>
-
-          <div className="flex gap-4">
             <button
-              onClick={() => setStep(2)}
-              className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-semibold"
+              onClick={handleSubmit}
+              disabled={loading || cartItems.length === 0}
+              className="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Back
-            </button>
-            <button
-              onClick={handlePlaceOrder}
-              disabled={loading}
-              className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold disabled:opacity-50"
-            >
-              {loading ? 'Processing...' : 'Place Order'}
+              {loading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <FiCheckCircle className="mr-2" />
+                  Place Order
+                </span>
+              )}
             </button>
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
