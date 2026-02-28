@@ -71,6 +71,26 @@ const getProductById = async (req, res) => {
     }
 };
 
+// Get featured products
+const getFeaturedProducts = async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            where: { is_active: true },
+            include: ['category'],
+            limit: 8,
+            order: [['date_added', 'DESC']]
+        });
+
+        res.json({
+            success: true,
+            products
+        });
+    } catch (error) {
+        console.error('Get featured products error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Get categories
 const getCategories = async (req, res) => {
     try {
@@ -88,5 +108,6 @@ const getCategories = async (req, res) => {
 module.exports = {
     getProducts,
     getProductById,
-    getCategories
+    getCategories,
+    getFeaturedProducts
 };
