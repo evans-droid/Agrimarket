@@ -194,7 +194,7 @@ const Home = () => {
           <p className="text-white/90 mb-8 max-w-2xl mx-auto">
             Get updates about new products, special offers, and farming tips directly in your inbox.
           </p>
-          <form className="max-w-md mx-auto flex gap-2">
+          <form className="max-w-md mx-auto flex flex-col sm:flex-row gap-4">
             <input
               type="email"
               placeholder="Enter your email"

@@ -4,6 +4,7 @@ const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const {
   getDashboardStats,
+  getAllProducts,
   addProduct,
   updateProduct,
   deleteProduct,
@@ -23,6 +24,7 @@ router.use(authorize('admin'));
 router.get('/dashboard', getDashboardStats);
 
 // Product management
+router.get('/products', getAllProducts);
 router.post('/products', upload.single('image'), addProduct);
 router.put('/products/:id', upload.single('image'), updateProduct);
 router.delete('/products/:id', deleteProduct);

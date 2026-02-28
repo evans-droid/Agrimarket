@@ -43,6 +43,24 @@ const getDashboardStats = async (req, res) => {
     }
 };
 
+// Get all products (for admin)
+const getAllProducts = async (req, res) => {
+    try {
+        const products = await Product.findAll({
+            include: ['category'],
+            order: [['created_at', 'DESC']]
+        });
+
+        res.json({
+            success: true,
+            products
+        });
+    } catch (error) {
+        console.error('Get all products error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Product management
 const addProduct = async (req, res) => {
     try {
@@ -283,6 +301,7 @@ const updateCompanySettings = async (req, res) => {
 
 module.exports = {
     getDashboardStats,
+    getAllProducts,
     addProduct,
     updateProduct,
     deleteProduct,

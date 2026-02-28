@@ -11,13 +11,18 @@ const sequelize = new Sequelize({
   define: {
     timestamps: true,
     underscored: true
-  }
+  },
+  // Disable foreign key constraints for SQLite
+  foreignKeyConstraints: false
 });
 
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ SQLite Database connected successfully');
+    
+    // Disable foreign key constraints for this connection
+    await sequelize.query('PRAGMA foreign_keys = OFF');
     
     // Test connection
     const [results] = await sequelize.query('SELECT 1 + 1 AS result');

@@ -26,7 +26,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "seed": "cd backend && npm run seed"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

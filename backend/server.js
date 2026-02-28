@@ -23,7 +23,7 @@ initializeModels();
 
 // Sync database (in development)
 if (process.env.NODE_ENV === 'development') {
-  sequelize.sync({ alter: true })
+  sequelize.sync()
     .then(() => console.log('Database synced'))
     .catch(err => console.error('Sync error:', err));
 }
