@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import ProductCard from '../components/Productcard';
+import ProductCard from '../components/ProductCard';
 import { motion } from 'framer-motion';
 import { FiArrowRight, FiTruck, FiShield, FiClock, FiAward } from 'react-icons/fi';
 import millImage from '../assets/images/Mill.jpeg';
@@ -59,7 +59,48 @@ const Home = () => {
       <section className="relative h-[600px] rounded-3xl overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="agricultural-marketplace\agricultural-website\src\assets\images\Mill.jpeg" 
+            src="https://images.unsplash.com/photo-1590779033100-94f60f7a7e97?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1374&q=80react-router-dom.js?v=84e4c0e2:4436 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+
+react-router-dom.js?v=84e4c0e2:4436 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+api/products/featured:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+Home.jsx:27 Fetch home data error: AxiosError: Request failed with status code 500
+    at async Promise.all (index 0)
+    at async fetchData (Home.jsx:20:44)
+api/categories:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/admin/settings:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+CompanyContext.jsx:33 Fetch company settings error: AxiosError: Request failed with status code 500
+    at async fetchCompanySettings (CompanyContext.jsx:30:24)
+api/products/featured:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+Home.jsx:27 Fetch home data error: AxiosError: Request failed with status code 500
+    at async Promise.all (index 0)
+    at async fetchData (Home.jsx:20:44)
+api/categories:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+api/admin/settings:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+CompanyContext.jsx:33 Fetch company settings error: AxiosError: Request failed with status code 500
+    at async fetchCompanySettings (CompanyContext.jsx:30:24)
+api/products/categories:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+products.jsx:39 Fetch categories error: AxiosError: Request failed with status code 500
+    at async fetchCategories (products.jsx:36:24)
+api/products?page=1&…_added&order=DESC:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+products.jsx:56 Fetch products error: AxiosError: Request failed with status code 500
+    at async fetchProducts (products.jsx:52:24)
+api/products/categories:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+products.jsx:39 Fetch categories error: AxiosError: Request failed with status code 500
+    at async fetchCategories (products.jsx:36:24)
+api/products?page=1&…_added&order=DESC:1 
+ Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+products.jsx:56 Fetch products error: AxiosError: Request failed with status code 500
+    at async fetchProducts (products.jsx:52:24)
+" 
             alt="Fresh agricultural products"
             className="w-full h-full object-cover"
           />

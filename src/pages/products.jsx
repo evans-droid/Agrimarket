@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ProductCard from '../components/Productcard';
-import Pagination from '../components/Pagination';
+import ProductCard from '../components/ProductCard';
+import Pagination from '../components/pagination';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 

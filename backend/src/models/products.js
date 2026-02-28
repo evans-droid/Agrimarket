@@ -46,6 +46,13 @@ const Product = sequelize.define('Product', {
   is_active: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  seller_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   }
 }, {
   tableName: 'products',

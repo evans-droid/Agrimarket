@@ -21,7 +21,7 @@ connectDB();
 // Initialize models and associations
 initializeModels();
 
-// Sync database (in development)
+// Sync database (in development) - only create tables if they don't exist
 if (process.env.NODE_ENV === 'development') {
   sequelize.sync()
     .then(() => console.log('Database synced'))

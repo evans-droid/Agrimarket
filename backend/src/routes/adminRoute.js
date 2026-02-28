@@ -16,7 +16,10 @@ const {
   updateCompanySettings
 } = require('../controllers/adminController');
 
-// All admin routes require authentication and admin role
+// Public route - get company settings (no auth required)
+router.get('/settings', getCompanySettings);
+
+// All other admin routes require authentication and admin role
 router.use(protect);
 router.use(authorize('admin'));
 
@@ -37,8 +40,7 @@ router.put('/orders/:id/status', updateOrderStatus);
 router.get('/users', getAllUsers);
 router.put('/users/:id/status', updateUserStatus);
 
-// Company settings
-router.get('/settings', getCompanySettings);
+// Company settings - protected write (GET is already public above)
 router.put('/settings', upload.single('logo'), updateCompanySettings);
 
 module.exports = router;
