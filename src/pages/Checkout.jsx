@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { FiShoppingCart, FiCreditCard, FiMapPin, FiTruck, FiCheckCircle } from 'react-icons/fi';
 import { motion } from 'framer-motion';

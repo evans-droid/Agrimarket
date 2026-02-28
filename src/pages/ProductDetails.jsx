@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import { FiShoppingCart, FiMinus, FiPlus, FiHeart, FiShare2 } from 'react-icons/fi';
 import { motion } from 'framer-motion';

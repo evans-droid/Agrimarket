@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { FiUser, FiMail, FiPhone, FiMapPin, FiPackage, FiEdit2, FiSave, FiX } from 'react-icons/fi';
 import { motion } from 'framer-motion';
