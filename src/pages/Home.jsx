@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import ProductCard from '../components/ProductCard';
+import ProductCard from '../components/Productcard';
 import { motion } from 'framer-motion';
 import { FiArrowRight, FiTruck, FiShield, FiClock, FiAward } from 'react-icons/fi';
 import millImage from '../assets/images/Mill.jpeg';
