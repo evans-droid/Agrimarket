@@ -28,7 +28,7 @@ const Navbar = () => {
     <nav className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-{/* Logo */}
+          {/* Logo */}
           <Link to="/" className="flex items-center">
             {company.logo ? (
               <img src={company.logo} alt={company.name} className="h-10 w-10 mr-2 rounded-full object-cover" />
@@ -58,7 +58,16 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
-{/* Cart */}
+            {/* Dark Mode Toggle - Desktop */}
+            <button
+              onClick={toggleDarkMode}
+              className="hidden md:flex p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {isDarkMode ? <FiSun className="text-xl" /> : <FiMoon className="text-xl" />}
+            </button>
+
+            {/* Cart */}
             <Link to="/cart" className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-green-600 transition-colors">
               <FiShoppingCart className="w-6 h-6" />
               {cartItemCount > 0 && (
@@ -104,7 +113,7 @@ const Navbar = () => {
                         Orders
                       </Link>
                       {user?.role === 'admin' && (
-<Link
+                        <Link
                           to="/admin"
                           className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setIsProfileOpen(false)}
@@ -133,12 +142,14 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
             ) : (
-              <Link
-                to="/login"
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Login
-              </Link>
+              <>
+                <Link
+                  to="/login"
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Login
+                </Link>
+              </>
             )}
 
             {/* Mobile Menu Button */}
@@ -189,6 +200,74 @@ const Navbar = () => {
                 >
                   Fruits
                 </Link>
+
+                {/* Mobile Menu - User Section */}
+                {isAuthenticated ? (
+                  <>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                      <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 px-4 mb-2">
+                        Account
+                      </p>
+                      <Link
+                        to="/profile"
+                        className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <FiUser className="mr-2" />
+                        Profile
+                      </Link>
+                      <Link
+                        to="/order-history"
+                        className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <FiPackage className="mr-2" />
+                        Orders
+                      </Link>
+                      {user?.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <FiSettings className="mr-2" />
+                          Admin
+                        </Link>
+                      )}
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                      {/* Dark Mode Toggle - Mobile */}
+                      <button
+                        onClick={toggleDarkMode}
+                        className="flex items-center w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {isDarkMode ? <FiSun className="mr-2" /> : <FiMoon className="mr-2" />}
+                        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        <FiLogOut className="mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                    {/* Dark Mode Toggle - Mobile (when not logged in) */}
+                    <button
+                      onClick={toggleDarkMode}
+                      className="flex items-center w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {isDarkMode ? <FiSun className="mr-2" /> : <FiMoon className="mr-2" />}
+                      {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
