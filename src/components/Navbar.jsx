@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { FiMenu, FiX, FiShoppingCart, FiUser, FiLogOut, FiPackage, FiSettings } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import DarkModeToggle from './DarkModeToggle';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -47,6 +48,9 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
+            {/* Dark Mode Toggle */}
+            <DarkModeToggle />
+
             {/* Cart */}
             <Link to="/cart" className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-green-600 transition-colors">
               <FiShoppingCart className="w-6 h-6" />
