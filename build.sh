@@ -1,7 +1,10 @@
 #!/bin/bash
+set -e
+
 # Install backend dependencies
 cd backend
-npm install
+npm install --production
 cd ..
+
 # Build frontend
-vite build
+npm run build
