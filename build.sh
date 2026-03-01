@@ -7,4 +7,4 @@ npm install --production
 cd ..
 
 # Build frontend
-npm run build
+npx vite build
