@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { FiMenu, FiX, FiShoppingCart, FiUser, FiLogOut, FiPackage, FiSettings } from 'react-icons/fi';
+import { useCompany } from '../context/CompanyContext';
+import { FiMenu, FiX, FiShoppingCart, FiUser, FiLogOut, FiPackage, FiSettings, FiSun, FiMoon } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import DarkModeToggle from './DarkModeToggle';
+import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const { cartItems } = useCart();
+  const { company } = useCompany();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -25,9 +28,16 @@ const Navbar = () => {
     <nav className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+{/* Logo */}
           <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold text-green-600">AgriMarket</span>
+            {company.logo ? (
+              <img src={company.logo} alt={company.name} className="h-10 w-10 mr-2 rounded-full object-cover" />
+            ) : (
+              <div className="h-10 w-10 mr-2 rounded-full bg-green-600 flex items-center justify-center">
+                <span className="text-white font-bold text-xl">{company.name?.charAt(0) || 'A'}</span>
+              </div>
+            )}
+            <span className="text-2xl font-bold text-green-600">{company.name || 'AgriMarket'}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -48,10 +58,7 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
-            {/* Dark Mode Toggle */}
-            <DarkModeToggle />
-
-            {/* Cart */}
+{/* Cart */}
             <Link to="/cart" className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-green-600 transition-colors">
               <FiShoppingCart className="w-6 h-6" />
               {cartItemCount > 0 && (
@@ -97,7 +104,7 @@ const Navbar = () => {
                         Orders
                       </Link>
                       {user?.role === 'admin' && (
-                        <Link
+<Link
                           to="/admin"
                           className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setIsProfileOpen(false)}
@@ -106,6 +113,14 @@ const Navbar = () => {
                           Admin
                         </Link>
                       )}
+                      {/* Dark Mode Toggle in Menu */}
+                      <button
+                        onClick={toggleDarkMode}
+                        className="flex items-center w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        {isDarkMode ? <FiSun className="mr-2" /> : <FiMoon className="mr-2" />}
+                        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                      </button>
                       <button
                         onClick={handleLogout}
                         className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
