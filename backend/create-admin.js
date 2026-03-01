@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { sequelize } = require('./src/config/database');
-const { User, Role } = require('./src/models');
+const { User, Role, Category, Product, CompanySettings } = require('./src/models');
 
 const createAdmin = async () => {
   try {
@@ -8,52 +8,65 @@ const createAdmin = async () => {
     await sequelize.authenticate();
     console.log('✅ Connected to database');
 
-    // Sync models
-    await sequelize.sync({ force: false });
-    console.log('✅ Models synced');
+    // Force sync - drops all tables and recreates them
+    await sequelize.sync({ force: true });
+    console.log('✅ Database synced (fresh)');
 
-    // Check if roles exist
-    let roles = await Role.findAll();
-    if (roles.length === 0) {
-      // Create roles if they don't exist
-      roles = await Role.bulkCreate([
-        { name: 'admin' },
-        { name: 'user' }
-      ]);
-      console.log('✅ Roles created');
-    }
+    // Create roles
+    await Role.bulkCreate([
+      { name: 'admin' },
+      { name: 'user' }
+    ]);
+    console.log('✅ Roles created');
 
-    // Find admin role
+    // Get admin role
     const adminRole = await Role.findOne({ where: { name: 'admin' } });
-    if (!adminRole) {
-      console.error('❌ Admin role not found');
-      process.exit(1);
+    const userRole = await Role.findOne({ where: { name: 'user' } });
+
+    // Create admin user
+    const hashedPassword = await bcrypt.hash('Admin@123', 10);
+    await User.create({
+      name: 'Admin User',
+      email: 'admin@agrimarket.com',
+      password: hashedPassword,
+      phone: '+233501234567',
+      role_id: adminRole.id,
+      is_active: true
+    });
+    console.log('✅ Admin user created');
+
+    // Create categories
+    await Category.bulkCreate([
+      { name: 'Cereals', description: 'Fresh cereals including maize, rice, wheat, and more' },
+      { name: 'Grains', description: 'Nutritious grains like millet, sorghum, and oats' },
+      { name: 'Flour', description: 'Various types of flour including corn flour, wheat flour' },
+      { name: 'Legumes', description: 'Protein-rich legumes like beans, groundnuts, and peas' },
+      { name: 'Tubers', description: 'Fresh tubers including yam, cassava, and sweet potatoes' },
+      { name: 'Vegetables', description: 'Fresh organic vegetables' }
+    ]);
+    console.log('✅ Categories created');
+
+    // Create company settings
+    await CompanySettings.create({
+      company_name: 'AgriMarket',
+      company_email: 'info@agrimarket.com',
+      company_phone: '+233501234567',
+      company_address: '123 Farm Road, Accra, Ghana'
+    });
+    console.log('✅ Company settings created');
+
+    // Verify admin user was created
+    const adminUser = await User.findOne({ where: { email: 'admin@agrimarket.com' } });
+    if (adminUser) {
+      console.log('\n✅ Admin user verified in database!');
+      console.log('   ID:', adminUser.id);
+      console.log('   Name:', adminUser.name);
+      console.log('   Email:', adminUser.email);
+      console.log('   Role ID:', adminUser.role_id);
+      console.log('   Active:', adminUser.is_active);
     }
 
-    // Check if admin user exists
-    const existingAdmin = await User.findOne({ where: { email: 'admin@agrimarket.com' } });
-
-    if (existingAdmin) {
-      // Update existing user to admin
-      existingAdmin.role_id = adminRole.id;
-      existingAdmin.is_active = true;
-      await existingAdmin.save();
-      console.log('✅ Existing user updated to admin');
-    } else {
-      // Create new admin user
-      const hashedPassword = await bcrypt.hash('Admin@123', 10);
-      await User.create({
-        name: 'Admin User',
-        email: 'admin@agrimarket.com',
-        password: hashedPassword,
-        phone: '+233501234567',
-        role_id: adminRole.id,
-        is_active: true
-      });
-      console.log('✅ Admin user created');
-    }
-
-    console.log('\n🎉 Admin user ready!');
+    console.log('\n🎉 Database initialized successfully!');
     console.log('\n📝 Login credentials:');
     console.log('Email: admin@agrimarket.com');
     console.log('Password: Admin@123');
