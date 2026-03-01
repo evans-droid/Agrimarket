@@ -29,7 +29,7 @@ const ProductCard = ({ product }) => {
       <Link to={`/products/${product.id}`} className="block">
         <div className="relative h-48 overflow-hidden group">
           <img 
-            src={product.image_url || '/api/placeholder/400/320'} 
+            src={product.image_url || 'https://placehold.co/400x320?text=No+Image'} 
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />

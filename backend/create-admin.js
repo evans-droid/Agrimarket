@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const { sequelize } = require('./src/config/database');
 const { User, Role, Category, Product, CompanySettings } = require('./src/models');
 
@@ -21,14 +20,12 @@ const createAdmin = async () => {
 
     // Get admin role
     const adminRole = await Role.findOne({ where: { name: 'admin' } });
-    const userRole = await Role.findOne({ where: { name: 'user' } });
 
-    // Create admin user
-    const hashedPassword = await bcrypt.hash('Admin@123', 10);
+    // Create admin user - NOTE: Password will be hashed by the model's beforeCreate hook
     await User.create({
       name: 'Admin User',
       email: 'admin@agrimarket.com',
-      password: hashedPassword,
+      password: 'Admin@123',  // Plain password - will be hashed by hook
       phone: '+233501234567',
       role_id: adminRole.id,
       is_active: true
@@ -64,6 +61,7 @@ const createAdmin = async () => {
       console.log('   Email:', adminUser.email);
       console.log('   Role ID:', adminUser.role_id);
       console.log('   Active:', adminUser.is_active);
+      console.log('   Password (hashed):', adminUser.password.substring(0, 20) + '...');
     }
 
     console.log('\n🎉 Database initialized successfully!');
