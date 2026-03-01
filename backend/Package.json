@@ -1,6 +1,7 @@
 {
   "name": "agricultural-marketplace-backend",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "Backend for agricultural products e-commerce platform",
   "main": "server.js",
   "scripts": {
